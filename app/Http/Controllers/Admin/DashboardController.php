@@ -4,7 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\CustomerSession;
+
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Table;
+use App\Models\Section;
+use App\Models\User;
+
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -12,143 +18,232 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // 📅 Date Filter (optional)
-        $from = $request->from ?? Carbon::today()->startOfDay();
-        $to = $request->to ?? Carbon::today()->endOfDay();
+        $from = $request->from
+            ? Carbon::parse($request->from)->startOfDay()
+            : Carbon::today()->startOfDay();
 
-        // ================================
-        // 💰 BUSINESS (MONEY SECTION)
-        // ================================
+        $to = $request->to
+            ? Carbon::parse($request->to)->endOfDay()
+            : Carbon::today()->endOfDay();
 
-        $totalCollection = CustomerSession::whereBetween('created_at', [$from, $to])
-            ->sum('entry_fee');
+        /*
+        |--------------------------------------------------------------------------
+        | MAIN ORDER QUERY
+        |--------------------------------------------------------------------------
+        */
+        $orders = Order::whereBetween('created_at', [$from, $to]);
 
-        $coverAmount = CustomerSession::whereBetween('created_at', [$from, $to])
-            ->sum('entry_fee');
+        /*
+        |--------------------------------------------------------------------------
+        | SALES
+        |--------------------------------------------------------------------------
+        */
+        $totalSales = (clone $orders)->sum('grand_total');
 
-        $usedAmount = CustomerSession::whereBetween('created_at', [$from, $to])
-            ->sum('used_amount');
+        $totalOrders = (clone $orders)->count();
 
-        $remainingAmount = CustomerSession::whereBetween('created_at', [$from, $to])
-            ->sum('remaining_amount');
-
-        $dueAmount = CustomerSession::whereBetween('created_at', [$from, $to])
-            ->sum('remaining_amount');
-
-        // ================================
-        // 👥 LIVE OPERATIONS
-        // ================================
-
-        $totalSessions = CustomerSession::count();
-
-        $activeSessions = CustomerSession::where('status', 'active')->count();
-
-        $closedSessions = CustomerSession::where('status', 'closed')->count();
-
-        $occupiedTables = CustomerSession::where('status', 'active')
-            ->whereNotNull('table_id')
+        $completedOrders = (clone $orders)
+            ->where('status', 'billed')
             ->count();
 
-        // ================================
-        // 🚶 WALKIN vs QR / ONLINE
-        // ================================
+        $runningOrders = (clone $orders)
+            ->whereIn('status', ['draft', 'kot'])
+            ->count();
 
-        $walkin = CustomerSession::whereNull('qr_code')->count();
+        $cancelledOrders = (clone $orders)
+            ->where('status', 'cancelled')
+            ->count();
 
-        $qrOrders = CustomerSession::whereNotNull('qr_code')->count();
+        /*
+        |--------------------------------------------------------------------------
+        | ORDER TYPES
+        |--------------------------------------------------------------------------
+        */
+        $dineInSales = (clone $orders)
+            ->where('order_type', 'Dine In')
+            ->sum('grand_total');
 
-        // ================================
-        // 👤 CUSTOMER ANALYTICS
-        // ================================
+        $dineInOrders = (clone $orders)
+            ->where('order_type', 'Dine In')
+            ->count();
 
-        $totalPax = CustomerSession::count(); // if column exists
+        $pickupSales = (clone $orders)
+            ->where('order_type', 'Pick Up')
+            ->sum('grand_total');
 
-        $totalGroup = CustomerSession::distinct('customer_phone')->count('customer_phone');
+        $pickupOrders = (clone $orders)
+            ->where('order_type', 'Pick Up')
+            ->count();
 
-        // ================================
-        // 📊 TOP SELLING ITEMS (from order_items)
-        // ================================
+        $deliverySales = (clone $orders)
+            ->where('order_type', 'Delivery')
+            ->sum('grand_total');
 
-        $topItems = DB::table('order_items')
-            ->join('menu_items', 'menu_items.id', '=', 'order_items.menu_item_id')
-            ->select(
-                'menu_items.name',
-                DB::raw('SUM(order_items.quantity) as total_orders')
+        $deliveryOrders = (clone $orders)
+            ->where('order_type', 'Delivery')
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | LIVE TABLES
+        |--------------------------------------------------------------------------
+        */
+        $occupiedTables = Order::whereIn('status', ['draft', 'kot'])
+            ->distinct('table_id')
+            ->count('table_id');
+
+        $totalTables = Table::count();
+
+        $availableTables = $totalTables - $occupiedTables;
+
+        /*
+        |--------------------------------------------------------------------------
+        | PAYMENT BIFURCATION
+        |--------------------------------------------------------------------------
+        */
+        $cashSales = (clone $orders)->sum('cash_amount');
+
+        $cardSales = (clone $orders)->sum('card_amount');
+
+        $upiSales = (clone $orders)->sum('upi_amount');
+
+        $otherSales = (clone $orders)->sum('other_amount');
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOP SELLING ITEMS
+        |--------------------------------------------------------------------------
+        */
+        $topItems = OrderItem::select(
+                'item_name',
+                DB::raw('SUM(quantity) as total_qty')
             )
-            ->groupBy('menu_items.name')
-            ->orderByDesc('total_orders')
+            ->groupBy('item_name')
+            ->orderByDesc('total_qty')
+            ->limit(10)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOP CAPTAINS / BILLERS
+        |--------------------------------------------------------------------------
+        */
+        $topUsers = Order::join('users', 'users.id', '=', 'orders.created_by')
+            ->select(
+                'users.name',
+                DB::raw('COUNT(orders.id) as total_orders'),
+                DB::raw('SUM(orders.grand_total) as total_sales')
+            )
+            ->groupBy('users.name')
+            ->orderByDesc('total_sales')
             ->limit(5)
             ->get();
 
-        $topItem = $topItems->first();
-
-        // ================================
-        // 📈 REVENUE CHART (LAST 7 DAYS)
-        // ================================
-
-        $revenueChart = CustomerSession::selectRaw('DATE(created_at) as date, SUM(entry_fee) as total')
+        /*
+        |--------------------------------------------------------------------------
+        | SALES CHART (7 DAYS)
+        |--------------------------------------------------------------------------
+        */
+        $salesChart = Order::selectRaw("
+                DATE(created_at) as date,
+                SUM(grand_total) as total
+            ")
+            ->whereDate(
+                'created_at',
+                '>=',
+                Carbon::today()->subDays(6)
+            )
             ->groupBy('date')
-            ->orderBy('date', 'ASC')
-            ->limit(7)
+            ->orderBy('date')
             ->get();
 
-        // ================================
-        // 🟢 LIVE ACTIVE CUSTOMERS
-        // ================================
-
-        $activeCustomers = CustomerSession::where('status', 'active')
+        /*
+        |--------------------------------------------------------------------------
+        | RECENT ORDERS
+        |--------------------------------------------------------------------------
+        */
+        $recentOrders = Order::with([
+                'table',
+                'user'
+            ])
             ->latest()
-            ->limit(5)
+            ->limit(10)
             ->get();
 
-        // ================================
-        // 🧾 RECENT TRANSACTIONS
-        // ================================
+        /*
+        |--------------------------------------------------------------------------
+        | KOT ANALYTICS
+        |--------------------------------------------------------------------------
+        */
+        $kotOrders = Order::where('status', 'kot')->count();
 
-        $transactions = CustomerSession::latest()
-            ->limit(5)
-            ->get();
+        $draftOrders = Order::where('status', 'draft')->count();
 
-        // ================================
-        // 📊 GROWTH ANALYTICS (TODAY vs YESTERDAY)
-        // ================================
-
-        $todayCollection = CustomerSession::whereDate('created_at', Carbon::today())
-            ->sum('entry_fee');
-
-        $yesterdayCollection = CustomerSession::whereDate('created_at', Carbon::yesterday())
-            ->sum('entry_fee');
-
-        $growth = $yesterdayCollection > 0
-            ? (($todayCollection - $yesterdayCollection) / $yesterdayCollection) * 100
+        /*
+        |--------------------------------------------------------------------------
+        | AVERAGE BILL VALUE
+        |--------------------------------------------------------------------------
+        */
+        $avgBill = $totalOrders > 0
+            ? $totalSales / $totalOrders
             : 0;
 
-        // ================================
-        // RETURN VIEW
-        // ================================
+        /*
+        |--------------------------------------------------------------------------
+        | TAX / DISCOUNT / SERVICE
+        |--------------------------------------------------------------------------
+        */
+        $totalTax = (clone $orders)->sum('tax');
 
+        $totalDiscount = (clone $orders)->sum('discount_amount');
+
+        $serviceCharge = (clone $orders)->sum('service_charge');
+
+        /*
+        |--------------------------------------------------------------------------
+        | RETURN VIEW
+        |--------------------------------------------------------------------------
+        */
         return view('dashboard', compact(
-            'totalCollection',
-            'coverAmount',
-            'usedAmount',
-            'remainingAmount',
-            'dueAmount',
-            'totalSessions',
-            'activeSessions',
-            'closedSessions',
+            'totalSales',
+            'totalOrders',
+            'completedOrders',
+            'runningOrders',
+            'cancelledOrders',
+
+            'dineInSales',
+            'dineInOrders',
+
+            'pickupSales',
+            'pickupOrders',
+
+            'deliverySales',
+            'deliveryOrders',
+
             'occupiedTables',
-            'walkin',
-            'qrOrders',
-            'totalPax',
-            'totalGroup',
+            'availableTables',
+            'totalTables',
+
+            'cashSales',
+            'cardSales',
+            'upiSales',
+            'otherSales',
+
             'topItems',
-            'topItem',
-            'revenueChart',
-            'activeCustomers',
-            'transactions',
-            'todayCollection',
-            'yesterdayCollection',
-            'growth'
+            'topUsers',
+
+            'salesChart',
+
+            'recentOrders',
+
+            'kotOrders',
+            'draftOrders',
+
+            'avgBill',
+
+            'totalTax',
+            'totalDiscount',
+            'serviceCharge'
         ));
     }
 }

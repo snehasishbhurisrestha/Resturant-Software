@@ -144,21 +144,9 @@
                                 </a>
                             @endcan
 
-                            @can('Table Transfer')
-                                <a href="#" class="btn btn-sm btn-warning">
-                                    Move
-                                </a>
-                            @endcan
-
                             @can('Order Cancel')
                                 <a href="#" class="btn btn-sm btn-danger">
                                     Cancel
-                                </a>
-                            @endcan
-
-                            @can('Bill NC')
-                                <a href="#" class="btn btn-sm btn-dark">
-                                    NC
                                 </a>
                             @endcan
                         </td>

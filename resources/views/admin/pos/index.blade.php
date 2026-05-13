@@ -65,6 +65,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 @section('content')
 
 <div class="content">
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ url()->previous() }}"
+           class="btn btn-warning">
+            <i class="fa fa-arrow-left me-1"></i> Back
+        </a>
+    </div>
 
     <div class="card border-0 shadow-sm overflow-hidden">
 
@@ -275,7 +281,34 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
                 <div class="col-lg-4 border-start bg-dark">
 
                     <div class="p-3 border-bottom">
-                        <h5 class="mb-0">Current Order</h5>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1 text-white">Current Order</h5>
+
+                                <div class="small text-light">
+                                    Section:
+                                    <span class="fw-bold">
+                                        {{ $currentSection->name ?? 'N/A' }}
+                                    </span>
+                                </div>
+
+                                <div class="small text-light">
+                                    Table:
+                                    <span class="fw-bold">
+                                        {{ $currentTable->table_number ?? 'N/A' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Move Table Button -->
+                            <button class="btn btn-warning btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#moveTableModal">
+                                Move
+                            </button>
+                        </div>
+
                     </div>
 
                     <div id="cartArea" class="p-3">
@@ -912,6 +945,84 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 
     </div>
 
+</div>
+
+<!-- Move Table Modal -->
+<div class="modal fade" id="moveTableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Move Table</h5>
+
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="{{ route('pos.move.table') }}" method="POST">
+                @csrf
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                           name="current_table_id"
+                           value="{{ $currentTable->id }}">
+
+                    <!-- Select Section -->
+                    <div class="mb-3">
+                        <label class="form-label">Select Section</label>
+
+                        <select class="form-select"
+                                name="section_id"
+                                id="moveSection">
+                            <option value="">Choose Section</option>
+
+                            @foreach($sections as $section)
+                                <option value="{{ $section->id }}">
+                                    {{ $section->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Select Table -->
+                    <div class="mb-3">
+                        <label class="form-label">Select Table</label>
+
+                        <select class="form-select"
+                                name="new_table_id"
+                                required>
+
+                            <option value="">Choose Table</option>
+
+                            @foreach($sections as $section)
+                                <optgroup label="{{ $section->name }}">
+
+                                    @foreach($section->tables as $table)
+                                        <option value="{{ $table->id }}">
+                                            {{ $table->table_number }}
+                                        </option>
+                                    @endforeach
+
+                                </optgroup>
+                            @endforeach
+
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-secondary">
+                    <button type="submit" class="btn btn-warning">
+                        Move Table
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
 </div>
 @endsection
 

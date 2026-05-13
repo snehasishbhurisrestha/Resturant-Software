@@ -153,6 +153,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos/kot-save',[PosController::class,'kotSave']);
 
     Route::post('/pos/update-payment', [PosController::class, 'updatePayment'])->name('pos.update.payment');
+    Route::post('/pos/move-table', [PosController::class, 'moveTable'])->name('pos.move.table');
 
     // Route::get('/categories', [CategoryController::class,'index'])->name('categories.index');
     // Route::post('/categories', [CategoryController::class,'store'])->name('categories.store');

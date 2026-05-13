@@ -43,7 +43,7 @@ class PosController extends Controller
         );
     }
 
-    public function mainindex(String $sectionId, String $tableId)
+    /*public function mainindex(String $sectionId, String $tableId)
     {
         // $sections = Section::where('restaurant_id', $this->restaurantId)
         //     ->where('is_active', 1)
@@ -69,6 +69,50 @@ class PosController extends Controller
         return view(
             'admin.pos.index',
             compact('sectionId', 'tableId', 'categories', 'items')
+        );
+    }*/
+
+    public function mainindex(String $sectionId, String $tableId)
+    {
+        $categories = MenuCategory::withCount('items')
+            ->where('restaurant_id', $this->restaurantId)
+            ->where('status', 1)
+            ->orderBy('category_group')
+            ->orderBy('name')
+            ->get();
+
+        $firstCategory = $categories->first();
+
+        $items = [];
+
+        if ($firstCategory) {
+            $items = MenuItem::where('category_id', $firstCategory->id)
+                ->where('status', 1)
+                ->get();
+        }
+
+        // Current section & table
+        $currentSection = Section::find($sectionId);
+
+        $currentTable = Table::find($tableId);
+
+        // All sections with tables for movement
+        $sections = Section::with('tables')
+            ->where('restaurant_id', $this->restaurantId)
+            ->where('is_active', 1)
+            ->get();
+
+        return view(
+            'admin.pos.index',
+            compact(
+                'sectionId',
+                'tableId',
+                'categories',
+                'items',
+                'currentSection',
+                'currentTable',
+                'sections'
+            )
         );
     }
 
@@ -1163,6 +1207,93 @@ class PosController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Payment updated'
+        ]);
+    }
+
+    public function moveTable(Request $request)
+    {
+        $request->validate([
+            'current_table_id' => 'required|exists:tables,id',
+            'new_table_id'     => 'required|exists:tables,id',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAME TABLE CHECK
+        |--------------------------------------------------------------------------
+        */
+        if ($request->current_table_id == $request->new_table_id) {
+
+            return back()->with([
+                'error' => 'Please select another table'
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CURRENT RUNNING ORDER
+        |--------------------------------------------------------------------------
+        */
+        $order = Order::where('table_id', $request->current_table_id)
+            ->whereIn('status', ['draft', 'kot'])
+            ->latest()
+            ->first();
+
+        if (!$order) {
+
+            return back()->with([
+                'error' => 'No active order found'
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | NEW TABLE
+        |--------------------------------------------------------------------------
+        */
+        $newTable = Table::with('section')
+            ->findOrFail($request->new_table_id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK TARGET TABLE ALREADY OCCUPIED
+        |--------------------------------------------------------------------------
+        */
+        $existingOrder = Order::where('table_id', $newTable->id)
+            ->whereIn('status', ['draft', 'kot'])
+            ->where('id', '!=', $order->id)
+            ->exists();
+
+        if ($existingOrder) {
+
+            return back()->with([
+                'error' => 'Selected table already has running order'
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | MOVE TABLE
+        |--------------------------------------------------------------------------
+        */
+        $order->table_id = $newTable->id;
+        $order->section_id = $newTable->section_id;
+
+        $order->save();
+
+        /*
+        |--------------------------------------------------------------------------
+        | REDIRECT TO NEW TABLE SCREEN
+        |--------------------------------------------------------------------------
+        */
+        return redirect()->route(
+            'admin.pos.main.index',
+            [
+                $newTable->section_id,
+                $newTable->id
+            ]
+        )->with([
+            'success' => 'Table moved successfully'
         ]);
     }
 }
