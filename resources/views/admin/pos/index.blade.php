@@ -66,7 +66,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 
 <div class="content">
     <div class="d-flex justify-content-end mb-3">
-        <a href="{{ url()->previous() }}"
+        <a href="{{ route('pos.index') }}"
            class="btn btn-warning">
             <i class="fa fa-arrow-left me-1"></i> Back
         </a>
@@ -97,7 +97,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
                 <div class="col-lg-2 border-end bg-dark left-panel d-none d-lg-block">
 
                     <div class="p-3 border-bottom">
-                        <h5 class="mb-0 text-white">Categories</h5>
+                        <h5 class="mb-0 text-primary">Categories</h5>
                     </div>
 
                     <div class="p-2">
@@ -284,16 +284,16 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h5 class="mb-1 text-white">Current Order</h5>
+                                <h5 class="mb-1 text-primary">Current Order</h5>
 
-                                <div class="small text-light">
+                                <div class="small text-primary">
                                     Section:
                                     <span class="fw-bold">
                                         {{ $currentSection->name ?? 'N/A' }}
                                     </span>
                                 </div>
 
-                                <div class="small text-light">
+                                <div class="small text-primary">
                                     Table:
                                     <span class="fw-bold">
                                         {{ $currentTable->table_number ?? 'N/A' }}
@@ -971,44 +971,69 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 
                     <!-- Select Section -->
                     <div class="mb-3">
-                        <label class="form-label">Select Section</label>
+
+                        <label class="form-label">
+                            Select Section
+                        </label>
 
                         <select class="form-select"
-                                name="section_id"
                                 id="moveSection">
-                            <option value="">Choose Section</option>
+
+                            <option value="">
+                                Choose Section
+                            </option>
 
                             @foreach($sections as $section)
-                                <option value="{{ $section->id }}">
-                                    {{ $section->name }}
-                                </option>
+
+                                @php
+
+                                    $availableTables = $section->tables->filter(function($table) use ($currentTable){
+
+                                        if($table->id == $currentTable->id){
+                                            return false;
+                                        }
+
+                                        $activeOrder = \App\Models\Order::where('table_id', $table->id)
+                                            ->whereIn('status', ['draft','kot'])
+                                            ->exists();
+
+                                        return !$activeOrder;
+                                    });
+
+                                @endphp
+
+                                @if($availableTables->count() > 0)
+
+                                    <option value="{{ $section->id }}">
+                                        {{ $section->name }}
+                                    </option>
+
+                                @endif
+
                             @endforeach
+
                         </select>
+
                     </div>
 
                     <!-- Select Table -->
                     <div class="mb-3">
-                        <label class="form-label">Select Table</label>
+
+                        <label class="form-label">
+                            Select Available Table
+                        </label>
 
                         <select class="form-select"
                                 name="new_table_id"
+                                id="moveTableSelect"
                                 required>
 
-                            <option value="">Choose Table</option>
-
-                            @foreach($sections as $section)
-                                <optgroup label="{{ $section->name }}">
-
-                                    @foreach($section->tables as $table)
-                                        <option value="{{ $table->id }}">
-                                            {{ $table->table_number }}
-                                        </option>
-                                    @endforeach
-
-                                </optgroup>
-                            @endforeach
+                            <option value="">
+                                Choose Table
+                            </option>
 
                         </select>
+
                     </div>
 
                 </div>
@@ -1683,107 +1708,170 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 
 <script>
 
-/*
-|--------------------------------------------------------------------------
-| NORMAL PAYMENT BUTTON
-|--------------------------------------------------------------------------
-*/
-$('.payment-btn').click(function(){
+    /*
+    |--------------------------------------------------------------------------
+    | NORMAL PAYMENT BUTTON
+    |--------------------------------------------------------------------------
+    */
+    $('.payment-btn').click(function(){
 
-    $('.payment-btn').removeClass('active');
+        $('.payment-btn').removeClass('active');
 
-    $(this).addClass('active');
+        $(this).addClass('active');
 
-    let paymentMethod =
-        $(this).find('span').text().trim();
+        let paymentMethod =
+            $(this).find('span').text().trim();
 
-    $.ajax({
+        $.ajax({
 
-        url: "{{ route('pos.update.payment') }}",
-        type: "POST",
+            url: "{{ route('pos.update.payment') }}",
+            type: "POST",
 
-        data: {
-            _token: "{{ csrf_token() }}",
-            order_id: selectedOrderId,
-            payment_method: paymentMethod
-        }
+            data: {
+                _token: "{{ csrf_token() }}",
+                order_id: selectedOrderId,
+                payment_method: paymentMethod
+            }
+        });
+
     });
 
-});
+
+    /*
+    |--------------------------------------------------------------------------
+    | OTHER PAYMENT SAVE
+    |--------------------------------------------------------------------------
+    */
+    function saveOtherPayment()
+    {
+        $.ajax({
+
+            url: "{{ route('pos.update.payment') }}",
+            type: "POST",
+
+            data: {
+
+                _token: "{{ csrf_token() }}",
+
+                order_id: selectedOrderId,
+
+                payment_method: 'Other',
+
+                other_payment_method:
+                    $('#otherMethod').val(),
+
+                payment_note:
+                    $('#paymentDescription').val()
+            },
+
+            success:function(response){
+
+                $('#otherPaymentModal').modal('hide');
+
+                alert(response.message);
+            }
+        });
+    }
 
 
-/*
-|--------------------------------------------------------------------------
-| OTHER PAYMENT SAVE
-|--------------------------------------------------------------------------
-*/
-function saveOtherPayment()
-{
-    $.ajax({
+    /*
+    |--------------------------------------------------------------------------
+    | SPLIT PAYMENT
+    |--------------------------------------------------------------------------
+    */
+    function saveSplitPayment()
+    {
+        $.ajax({
 
-        url: "{{ route('pos.update.payment') }}",
-        type: "POST",
+            url: "{{ route('pos.update.payment') }}",
+            type: "POST",
 
-        data: {
+            data: {
 
-            _token: "{{ csrf_token() }}",
+                _token: "{{ csrf_token() }}",
 
-            order_id: selectedOrderId,
+                order_id: selectedOrderId,
 
-            payment_method: 'Other',
+                payment_method: 'Split',
 
-            other_payment_method:
-                $('#otherMethod').val(),
+                cash_amount: $('#split_cash').val(),
 
-            payment_note:
-                $('#paymentDescription').val()
-        },
+                card_amount: $('#split_card').val(),
 
-        success:function(response){
+                upi_amount: $('#split_upi').val(),
 
-            $('#otherPaymentModal').modal('hide');
+                other_amount: $('#split_other').val()
+            },
 
-            alert(response.message);
-        }
+            success:function(response){
+
+                alert(response.message);
+            }
+        });
+    }
+
+</script>
+
+<script>
+
+    let sectionTables = {
+
+        @foreach($sections as $section)
+
+            @php
+
+                $availableTables = $section->tables->filter(function($table) use ($currentTable){
+
+                    if($table->id == $currentTable->id){
+                        return false;
+                    }
+
+                    $activeOrder = \App\Models\Order::where('table_id', $table->id)
+                        ->whereIn('status', ['draft','kot'])
+                        ->exists();
+
+                    return !$activeOrder;
+                });
+
+            @endphp
+
+            "{{ $section->id }}": [
+
+                @foreach($availableTables as $table)
+
+                    {
+                        id: "{{ $table->id }}",
+                        table: "{{ $table->table_number }}"
+                    },
+
+                @endforeach
+
+            ],
+
+        @endforeach
+
+    };
+
+    $('#moveSection').on('change', function(){
+
+        let sectionId = $(this).val();
+
+        let tables = sectionTables[sectionId] || [];
+
+        let html = '<option value="">Choose Table</option>';
+
+        tables.forEach(function(table){
+
+            html += `
+                <option value="${table.id}">
+                    Table ${table.table}
+                </option>
+            `;
+        });
+
+        $('#moveTableSelect').html(html);
+
     });
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| SPLIT PAYMENT
-|--------------------------------------------------------------------------
-*/
-function saveSplitPayment()
-{
-    $.ajax({
-
-        url: "{{ route('pos.update.payment') }}",
-        type: "POST",
-
-        data: {
-
-            _token: "{{ csrf_token() }}",
-
-            order_id: selectedOrderId,
-
-            payment_method: 'Split',
-
-            cash_amount: $('#split_cash').val(),
-
-            card_amount: $('#split_card').val(),
-
-            upi_amount: $('#split_upi').val(),
-
-            other_amount: $('#split_other').val()
-        },
-
-        success:function(response){
-
-            alert(response.message);
-        }
-    });
-}
 
 </script>
 @endsection

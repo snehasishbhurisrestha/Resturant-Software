@@ -125,10 +125,71 @@
                             <i class="icon-chevron-right arrow"></i>
                         </a>
                         <ul class="submenu">
-                            <li><a href="{{url('reports/day-end-summary')}}"><i class="icon-file-chart-column"></i><span>Day End Summary</span></a></li>
-                            <li><a href="{{url('reports/other-reports')}}"><i class="icon-chart-pie"></i><span>Other Reports</span></a></li>
-                            <li><a href="{{url('reports/report-notification')}}"><i class="icon-chart-column-increasing"></i><span>Report Notification</span></a></li>
-                            <li><a href="{{url('reports/delivery-management')}}"><i class="icon-bike"></i><span>Delivery Management</span></a></li>
+
+                            <!-- SALES -->
+                            <li>
+                                <a href="{{ route('reports.sales.summary') }}">
+                                    <i class="icon-report-money"></i>
+                                    <span>Sales Summary</span>
+                                </a>
+                            </li>
+
+                            <!-- CATEGORY -->
+                            <li>
+                                <a href="{{ route('reports.category.summary') }}">
+                                    <i class="icon-category"></i>
+                                    <span>Category Summary</span>
+                                </a>
+                            </li>
+
+                            <!-- ITEM -->
+                            <li>
+                                <a href="{{ route('reports.item.summary') }}">
+                                    <i class="icon-list-details"></i>
+                                    <span>Item Summary</span>
+                                </a>
+                            </li>
+
+                            <!-- ORDER -->
+                            <li>
+                                <a href="{{ route('reports.order.summary') }}">
+                                    <i class="icon-shopping-cart"></i>
+                                    <span>Order Summary</span>
+                                </a>
+                            </li>
+
+                            <!-- EXECUTIVE -->
+                            <li>
+                                <a href="{{ route('reports.executive.summary') }}">
+                                    <i class="icon-users-group"></i>
+                                    <span>Executive Sales Summary</span>
+                                </a>
+                            </li>
+
+                            <!-- TIP -->
+                            <li>
+                                <a href="{{ route('reports.tip.summary') }}">
+                                    <i class="icon-cash"></i>
+                                    <span>Tip Summary</span>
+                                </a>
+                            </li>
+
+                            <!-- EMPLOYEE -->
+                            <li>
+                                <a href="{{ route('reports.employee.summary') }}">
+                                    <i class="icon-user-star"></i>
+                                    <span>Employee Summary</span>
+                                </a>
+                            </li>
+
+                            <!-- NC -->
+                            <li>
+                                <a href="{{ route('reports.nc.summary') }}">
+                                    <i class="icon-alert-triangle"></i>
+                                    <span>NC Item Summary</span>
+                                </a>
+                            </li>
+
                         </ul>
                     </li>
                     @endcan

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\{
     CustomerController,
     GstController,
     PosController,
+    ReportController,
 };
 
 Route::get('/', function () {
@@ -181,6 +182,17 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('/reports/report-notification', function () {
         return view('admin.reports.report-notification');
+    });
+
+    Route::prefix('reports')->controller(ReportController::class)->group(function () {
+        Route::get('/sales-summary', 'salesSummary')->name('reports.sales.summary');
+        Route::get('/category-summary', 'categorySummary')->name('reports.category.summary');
+        Route::get('/item-summary', 'itemSummary')->name('reports.item.summary');
+        Route::get('/order-summary', 'orderSummary')->name('reports.order.summary');
+        Route::get('/executive-sales-summary', 'executiveSalesSummary')->name('reports.executive.summary');
+        Route::get('/tip-summary', 'tipSummary')->name('reports.tip.summary');
+        Route::get('/employee-summary', 'employeeSummary')->name('reports.employee.summary');
+        Route::get('/nc-item-summary', 'ncItemSummary')->name('reports.nc.summary');
     });
 
 

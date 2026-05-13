@@ -1287,7 +1287,7 @@ class PosController extends Controller
         |--------------------------------------------------------------------------
         */
         return redirect()->route(
-            'admin.pos.main.index',
+            'pos.mainindex',
             [
                 $newTable->section_id,
                 $newTable->id

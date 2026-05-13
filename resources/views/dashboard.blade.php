@@ -1,36 +1,255 @@
 @extends('layouts.app')
 
+@section('style')
+<style>
+
+    body{
+        background:#0b0b0b;
+        color:#fff;
+    }
+
+    /* MAIN CARD */
+    .dashboard-card{
+
+        background:linear-gradient(
+            145deg,
+            #181818,
+            #111111
+        );
+
+        border:1px solid rgba(212,175,55,.12);
+
+        border-radius:18px;
+
+        color:#fff;
+
+        box-shadow:
+            0 4px 20px rgba(0,0,0,.35);
+
+        transition:.3s;
+    }
+
+    .dashboard-card:hover{
+
+        transform:translateY(-2px);
+
+        box-shadow:
+            0 8px 30px rgba(212,175,55,.10);
+    }
+
+    /* HEADINGS */
+    .dashboard-card h3,
+    .dashboard-card h4,
+    .dashboard-card h5,
+    .dashboard-card h6{
+
+        color:#f6d365;
+
+        font-weight:600;
+    }
+
+    /* SMALL TEXT */
+    .dashboard-card small,
+    .text-muted{
+
+        color:#a1a1aa!important;
+    }
+
+    /* TABLE */
+    .table-dark{
+
+        --bs-table-bg:transparent;
+
+        color:#fff;
+    }
+
+    .table-dark thead th{
+
+        background:#1e1e1e;
+
+        color:#f6d365;
+
+        border-color:#2c2c2c;
+
+        font-size:13px;
+    }
+
+    .table-dark td{
+
+        border-color:#2c2c2c;
+    }
+
+    .table-hover tbody tr:hover{
+
+        background:rgba(212,175,55,.05);
+    }
+
+    /* BADGE */
+    .badge{
+
+        padding:7px 10px;
+
+        border-radius:8px;
+
+        font-size:11px;
+    }
+
+    .bg-warning{
+
+        background:#D4AF37!important;
+
+        color:#000!important;
+    }
+
+    .bg-success{
+
+        background:#16a34a!important;
+    }
+
+    /* BUTTON */
+    .btn-warning{
+
+        background:#D4AF37;
+
+        border:none;
+
+        color:#000;
+
+        font-weight:600;
+    }
+
+    .btn-warning:hover{
+
+        background:#f6d365;
+
+        color:#000;
+    }
+
+    /* FORM */
+    .form-control{
+
+        background:#181818;
+
+        border:1px solid #333;
+
+        color:#fff;
+    }
+
+    .form-control:focus{
+
+        background:#181818;
+
+        border-color:#D4AF37;
+
+        color:#fff;
+
+        box-shadow:
+            0 0 0 .15rem rgba(212,175,55,.15);
+    }
+
+    /* TOP TITLE */
+    .dashboard-title{
+
+        color:#f6d365;
+
+        font-weight:700;
+
+        letter-spacing:1px;
+    }
+
+    /* TOP ITEM BOX */
+    .border{
+
+        border:1px solid rgba(212,175,55,.10)!important;
+
+        background:#141414;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar{
+        width:7px;
+    }
+
+    ::-webkit-scrollbar-thumb{
+
+        background:#D4AF37;
+
+        border-radius:20px;
+    }
+
+    ::-webkit-scrollbar-track{
+        background:#111;
+    }
+
+    /* APEX CHART */
+    .apexcharts-tooltip{
+
+        background:#111!important;
+
+        border:1px solid #D4AF37!important;
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:768px){
+
+        .dashboard-card{
+            margin-bottom:15px;
+        }
+    }
+
+    .table.table-dark > :not(caption) > * > * {
+        background-color: #d4af37 !important;
+    }
+
+</style>
+@endsection
+
 @section('content')
 
 <div class="container-fluid py-3">
 
     <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+
+        <!-- TITLE -->
         <div>
-            <h3 class="fw-bold text-warning mb-0">
+
+            <h3 class="fw-bold text-warning mb-1">
                 Restaurant Dashboard
             </h3>
 
             <small class="text-muted">
                 Live POS Analytics
             </small>
+
         </div>
 
-        <form method="GET" class="d-flex gap-2">
-            <input type="date"
-                   name="from"
-                   class="form-control"
-                   value="{{ request('from') }}">
+        <!-- FILTER -->
+        <form method="GET"
+            class="row g-2 w-100 w-lg-auto">
 
-            <input type="date"
-                   name="to"
-                   class="form-control"
-                   value="{{ request('to') }}">
+            <div class="col-12 col-md">
+                <input type="date"
+                    name="from"
+                    class="form-control"
+                    value="{{ request('from') }}">
+            </div>
 
-            <button class="btn btn-warning">
-                Filter
-            </button>
+            <div class="col-12 col-md">
+                <input type="date"
+                    name="to"
+                    class="form-control"
+                    value="{{ request('to') }}">
+            </div>
+
+            <div class="col-12 col-md-auto">
+                <button class="btn btn-warning w-100">
+                    Filter
+                </button>
+            </div>
+
         </form>
+
     </div>
 
     <!-- KPI -->
@@ -419,207 +638,5 @@
     chart.render();
 
 </script>
-
-<style>
-
-body{
-    background:#0b0b0b;
-    color:#fff;
-}
-
-/* MAIN CARD */
-.dashboard-card{
-
-    background:linear-gradient(
-        145deg,
-        #181818,
-        #111111
-    );
-
-    border:1px solid rgba(212,175,55,.12);
-
-    border-radius:18px;
-
-    color:#fff;
-
-    box-shadow:
-        0 4px 20px rgba(0,0,0,.35);
-
-    transition:.3s;
-}
-
-.dashboard-card:hover{
-
-    transform:translateY(-2px);
-
-    box-shadow:
-        0 8px 30px rgba(212,175,55,.10);
-}
-
-/* HEADINGS */
-.dashboard-card h3,
-.dashboard-card h4,
-.dashboard-card h5,
-.dashboard-card h6{
-
-    color:#f6d365;
-
-    font-weight:600;
-}
-
-/* SMALL TEXT */
-.dashboard-card small,
-.text-muted{
-
-    color:#a1a1aa!important;
-}
-
-/* TABLE */
-.table-dark{
-
-    --bs-table-bg:transparent;
-
-    color:#fff;
-}
-
-.table-dark thead th{
-
-    background:#1e1e1e;
-
-    color:#f6d365;
-
-    border-color:#2c2c2c;
-
-    font-size:13px;
-}
-
-.table-dark td{
-
-    border-color:#2c2c2c;
-}
-
-.table-hover tbody tr:hover{
-
-    background:rgba(212,175,55,.05);
-}
-
-/* BADGE */
-.badge{
-
-    padding:7px 10px;
-
-    border-radius:8px;
-
-    font-size:11px;
-}
-
-.bg-warning{
-
-    background:#D4AF37!important;
-
-    color:#000!important;
-}
-
-.bg-success{
-
-    background:#16a34a!important;
-}
-
-/* BUTTON */
-.btn-warning{
-
-    background:#D4AF37;
-
-    border:none;
-
-    color:#000;
-
-    font-weight:600;
-}
-
-.btn-warning:hover{
-
-    background:#f6d365;
-
-    color:#000;
-}
-
-/* FORM */
-.form-control{
-
-    background:#181818;
-
-    border:1px solid #333;
-
-    color:#fff;
-}
-
-.form-control:focus{
-
-    background:#181818;
-
-    border-color:#D4AF37;
-
-    color:#fff;
-
-    box-shadow:
-        0 0 0 .15rem rgba(212,175,55,.15);
-}
-
-/* TOP TITLE */
-.dashboard-title{
-
-    color:#f6d365;
-
-    font-weight:700;
-
-    letter-spacing:1px;
-}
-
-/* TOP ITEM BOX */
-.border{
-
-    border:1px solid rgba(212,175,55,.10)!important;
-
-    background:#141414;
-}
-
-/* SCROLLBAR */
-::-webkit-scrollbar{
-    width:7px;
-}
-
-::-webkit-scrollbar-thumb{
-
-    background:#D4AF37;
-
-    border-radius:20px;
-}
-
-::-webkit-scrollbar-track{
-    background:#111;
-}
-
-/* APEX CHART */
-.apexcharts-tooltip{
-
-    background:#111!important;
-
-    border:1px solid #D4AF37!important;
-}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-
-    .dashboard-card{
-        margin-bottom:15px;
-    }
-}
-
-.table.table-dark > :not(caption) > * > * {
-    background-color: #d4af37 !important;
-}
-
-</style>
 
 @endsection

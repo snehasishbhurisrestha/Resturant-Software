@@ -1,6 +1,6 @@
 <header class="navbar-header">
     <div class="topbar-menu">
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2" style="line-height: 50px;">
 
             <!-- Logo -->
             {{-- <a href="index.html" class="logo">
@@ -57,7 +57,7 @@
             }
         </style>
 
-        <div class="header-item d-none d-sm-flex dropdown">
+        <div class="header-item d-flex align-items-center dropdown">
     
             <a href="javascript:void(0);" 
             class="topbar-link btn btn-icon dropdown-toggle"
