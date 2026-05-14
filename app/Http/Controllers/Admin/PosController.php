@@ -14,6 +14,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemAddon;
 use App\Models\Addon;
+use App\Models\PrintJob;
 
 use Illuminate\Support\Facades\Hash;
 
@@ -707,6 +708,34 @@ class PosController extends Controller
                     'drinkItems' => $drinkItems
                 ]
             )->render();
+        }
+
+        if($foodHtml != '')
+        {
+            PrintJob::create([
+
+                'order_id' => $order->id,
+
+                'printer_name' => 'kitchen',
+
+                'type' => 'kot',
+
+                'html' => $foodHtml
+            ]);
+        }
+
+        if($drinkHtml != '')
+        {
+            PrintJob::create([
+
+                'order_id' => $order->id,
+
+                'printer_name' => 'bar',
+
+                'type' => 'kot',
+
+                'html' => $drinkHtml
+            ]);
         }
 
         /*

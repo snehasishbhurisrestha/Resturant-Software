@@ -1458,14 +1458,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         }, function(res){
 
             // Kitchen Printer
-            if(res.food_html){
-                kotPrint(res.food_html);
-            }
+            // if(res.food_html){
+            //     kotPrint(res.food_html);
+            // }
 
             // Bar Printer
-            if(res.drink_html){
-                thermalHtmlPrint(res.drink_html);
-            }
+            // if(res.drink_html){
+            //     thermalHtmlPrint(res.drink_html);
+            // }
 
         });
 

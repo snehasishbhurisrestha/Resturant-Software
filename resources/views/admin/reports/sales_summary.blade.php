@@ -80,53 +80,53 @@
 
     <div class="report-card">
 
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
-                <!-- TITLE + DATE -->
-                <div class="d-flex align-items-center gap-3">
+            <!-- TITLE + DATE -->
+            <div class="d-flex align-items-center gap-3">
 
-                    <h3 class="report-title mb-0">
-                        Sales Summary Report
-                    </h3>
+                <h3 class="report-title mb-0">
+                    Sales Summary Report
+                </h3>
 
-                    <small class="text-muted">
+                <small class="text-muted">
 
-                        {{ \Carbon\Carbon::parse($from)->format('d M Y') }}
+                    {{ \Carbon\Carbon::parse($from)->format('d M Y') }}
 
-                        -
+                    -
 
-                        {{ \Carbon\Carbon::parse($to)->format('d M Y') }}
+                    {{ \Carbon\Carbon::parse($to)->format('d M Y') }}
 
-                    </small>
-
-                </div>
-
-                <!-- FILTER -->
-                <form method="GET"
-                    class="d-flex align-items-center gap-2 flex-wrap">
-
-                    <input type="date"
-                        name="from"
-                        value="{{ request('from', \Carbon\Carbon::parse($from)->format('Y-m-d')) }}"
-                        class="form-control">
-
-                    <input type="date"
-                        name="to"
-                        value="{{ request('to', \Carbon\Carbon::parse($to)->format('Y-m-d')) }}"
-                        class="form-control">
-
-                    <button class="btn btn-warning">
-                        Filter
-                    </button>
-
-                    <a href="{{ url()->current() }}"
-                    class="btn btn-dark border">
-                        Reset
-                    </a>
-
-                </form>
+                </small>
 
             </div>
+
+            <!-- FILTER -->
+            <form method="GET"
+                class="d-flex align-items-center gap-2 flex-wrap">
+
+                <input type="date"
+                    name="from"
+                    value="{{ request('from', \Carbon\Carbon::parse($from)->format('Y-m-d')) }}"
+                    class="form-control">
+
+                <input type="date"
+                    name="to"
+                    value="{{ request('to', \Carbon\Carbon::parse($to)->format('Y-m-d')) }}"
+                    class="form-control">
+
+                <button class="btn btn-warning">
+                    Filter
+                </button>
+
+                <a href="{{ url()->current() }}"
+                class="btn btn-dark border">
+                    Reset
+                </a>
+
+            </form>
+
+        </div>
 
         <div class="row">
 

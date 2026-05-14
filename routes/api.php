@@ -10,8 +10,16 @@ use App\Http\Controllers\API\KitchenController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\EntryController;
 use App\Http\Controllers\API\WaiterController;
+use App\Http\Controllers\API\PrintController;
 
 Route::post('/login',[AuthController::class,'login']);
+
+Route::get('/pending-print-jobs',[PrintController::class, 'pendingJobs']);
+Route::post('/mark-printed/{id}',[PrintController::class, 'markPrinted']);
+Route::post('/mark-failed/{id}',[PrintController::class, 'markFailed']);
+Route::post('/retry-print-job/{id}',[PrintController::class, 'retryJob']);
+Route::get('/failed-print-jobs',[PrintController::class, 'failedJobs']);
+Route::get('/print-history',[PrintController::class, 'history']);
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::post('/logout', [AuthController::class, 'logout']);

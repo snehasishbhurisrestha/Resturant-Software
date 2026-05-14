@@ -73,6 +73,11 @@
         }
 
     </style>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+
+    <!-- Buttons CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 @endsection
 @section('content')
 
@@ -131,7 +136,7 @@
 
         <div class="table-responsive">
 
-            <table class="table table-dark table-hover">
+            <table class="table table-dark table-hover" id="itemsTable">
 
                 <thead>
                     <tr>
@@ -165,4 +170,48 @@
 
 </div>
 
+@endsection
+
+@section('script')
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+    <!-- Buttons JS -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+
+    <!-- Export Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <!-- Export Buttons -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $('#itemsTable').DataTable({
+                dom: 'Bfrtip',
+
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Export Excel',
+                        title: 'Items Sales Report'
+                    },
+                    {
+                        extend: 'print',
+                        text: 'Print Table',
+                        title: 'Items Sales Report'
+                    }
+                ],
+
+                pageLength: 10,
+                responsive: true,
+                order: [[1, 'desc']]
+            });
+
+        });
+    </script>
 @endsection
