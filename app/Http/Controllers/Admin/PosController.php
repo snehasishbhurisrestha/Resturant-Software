@@ -498,6 +498,20 @@ class PosController extends Controller
         $item->addons()->delete();
         $item->delete();
 
+        // check remaining items
+        $remainingItems = OrderItem::where('order_id', $orderId)->count();
+
+        // if no items left then delete order
+        if ($remainingItems == 0) {
+
+            Order::where('id', $orderId)->delete();
+
+            return response()->json([
+                'status' => true,
+                'order_deleted' => true
+            ]);
+        }
+
         $this->calculateOrder($orderId);
 
         return response()->json([
@@ -715,6 +729,7 @@ class PosController extends Controller
             PrintJob::create([
 
                 'order_id' => $order->id,
+                'order_item_id' => null,
 
                 'printer_name' => 'kitchen',
 

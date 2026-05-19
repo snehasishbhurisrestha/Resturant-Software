@@ -97,7 +97,8 @@ class PrintController extends Controller
 
             $job->update([
 
-                'status' => 'failed',
+                // 'status' => 'failed',
+                'status' => 'pending',
 
                 'retry_count' => $job->retry_count + 1,
 
