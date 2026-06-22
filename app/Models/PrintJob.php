@@ -9,7 +9,6 @@ class PrintJob extends Model
     protected $fillable = [
 
         'order_id',
-        'order_item_id',
 
         'printer_name',
 

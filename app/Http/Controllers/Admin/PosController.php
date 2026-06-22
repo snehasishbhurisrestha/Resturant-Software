@@ -497,7 +497,7 @@ class PosController extends Controller
 
         $item->addons()->delete();
         $item->delete();
-
+        
         // check remaining items
         $remainingItems = OrderItem::where('order_id', $orderId)->count();
 
@@ -729,7 +729,6 @@ class PosController extends Controller
             PrintJob::create([
 
                 'order_id' => $order->id,
-                'order_item_id' => null,
 
                 'printer_name' => 'kitchen',
 

@@ -10,6 +10,8 @@ use App\Http\Controllers\API\KitchenController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\EntryController;
 use App\Http\Controllers\API\WaiterController;
+use App\Http\Controllers\API\PosCartApiController;
+
 use App\Http\Controllers\API\PrintController;
 
 Route::post('/login',[AuthController::class,'login']);
@@ -32,6 +34,48 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/item/{id}', [MenuController::class, 'itemDetails']);
     });
     Route::get('/tables',[TableController::class,'index']);
+    
+    
+    
+    /*
+    |--------------------------------------------------------------------------
+    | CART
+    |--------------------------------------------------------------------------
+    */
+
+    // Add to cart
+    Route::post('/cart/add',[PosCartApiController::class, 'addToCart']);
+    // Get cart
+    Route::get('/cart/get',[PosCartApiController::class, 'getCart']);
+    // Increase / decrease quantity
+    Route::post('/cart/qty',[PosCartApiController::class, 'updateQty']);
+    // Delete cart item
+    Route::post('/cart/delete',[PosCartApiController::class, 'deleteCartItem']);
+    
+    /*
+    |--------------------------------------------------------------------------
+    | KOT
+    |--------------------------------------------------------------------------
+    */
+
+    // Save KOT
+    Route::post('/kot/save',[PosCartApiController::class, 'kotSave']);
+    // Print KOT
+    Route::post('/kot/print',[PosCartApiController::class, 'kotPrint']);
+    
+    /*
+    |--------------------------------------------------------------------------
+    | TABLE
+    |--------------------------------------------------------------------------
+    */
+
+    // Move table
+    Route::post('/table/move',[PosCartApiController::class, 'moveTable']);
+    // Available tables
+    Route::get('/available-tables',[PosCartApiController::class, 'availableTables']);
+    
+    
+    
 
 
     Route::post('/orders/create', [OrderController::class, 'create']);

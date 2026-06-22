@@ -125,7 +125,6 @@
                             <i class="icon-chevron-right arrow"></i>
                         </a>
                         <ul class="submenu">
-
                             <!-- SALES -->
                             <li>
                                 <a href="{{ route('reports.sales.summary') }}">
@@ -133,7 +132,6 @@
                                     <span>Sales Summary</span>
                                 </a>
                             </li>
-
                             <!-- CATEGORY -->
                             <li>
                                 <a href="{{ route('reports.category.summary') }}">
@@ -141,7 +139,6 @@
                                     <span>Category Summary</span>
                                 </a>
                             </li>
-
                             <!-- ITEM -->
                             <li>
                                 <a href="{{ route('reports.item.summary') }}">
@@ -149,7 +146,6 @@
                                     <span>Item Summary</span>
                                 </a>
                             </li>
-
                             <!-- ORDER -->
                             <li>
                                 <a href="{{ route('reports.order.summary') }}">
@@ -157,7 +153,6 @@
                                     <span>Order Summary</span>
                                 </a>
                             </li>
-
                             <!-- EXECUTIVE -->
                             <li>
                                 <a href="{{ route('reports.executive.summary') }}">
@@ -165,7 +160,6 @@
                                     <span>Executive Sales Summary</span>
                                 </a>
                             </li>
-
                             <!-- TIP -->
                             <li>
                                 <a href="{{ route('reports.tip.summary') }}">
@@ -173,7 +167,6 @@
                                     <span>Tip Summary</span>
                                 </a>
                             </li>
-
                             <!-- EMPLOYEE -->
                             <li>
                                 <a href="{{ route('reports.employee.summary') }}">
@@ -181,7 +174,6 @@
                                     <span>Employee Summary</span>
                                 </a>
                             </li>
-
                             <!-- NC -->
                             <li>
                                 <a href="{{ route('reports.nc.summary') }}">

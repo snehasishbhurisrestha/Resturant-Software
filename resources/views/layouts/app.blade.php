@@ -35,7 +35,7 @@
 	<link rel="stylesheet" href="{{ asset('assets/admin/plugins/daterangepicker/daterangepicker.css') }}">
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/admin/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/style.css') }}?v={{ time() }}">
 
     <style>
         .btn-primary {
@@ -111,6 +111,7 @@
 		========================= -->
          
         <div class="page-wrapper" @if(!$sidebar_need) style="margin: 0;" @endif>
+
 
             <!-- Start Content -->
             <div class="">
@@ -282,37 +283,117 @@
             }
         }
         
-        window.thermalHtmlPrint = async function(html)
-        {
-            try {
+        // window.thermalHtmlPrint = async function(html)
+        // {
+        //     try {
         
-                if (typeof qz === 'undefined') {
-                    alert('QZ Tray not loaded');
-                    return;
-                }
+        //         if (typeof qz === 'undefined') {
+        //             alert('QZ Tray not loaded');
+        //             return;
+        //         }
         
-                if (!qz.websocket.isActive()) {
-                    await qz.websocket.connect();
-                }
+        //         if (!qz.websocket.isActive()) {
+        //             await qz.websocket.connect();
+        //         }
         
-                const config = qz.configs.create("cashier bill", {
-                    copies: 1,
-                    density: 300
-                });
+        //         const config = qz.configs.create("cashier bill", {
+        //             copies: 1,
+        //             density: 300
+        //         });
         
-                await qz.print(config, [{
-                    type: 'html',
-                    format: 'plain',
-                    data: html
-                }]);
+        //         await qz.print(config, [{
+        //             type: 'html',
+        //             format: 'plain',
+        //             data: html
+        //         }]);
         
-                console.log("Printed");
+        //         console.log("Printed");
         
-            } catch (e) {
-                console.error(e);
-                alert("Printer Error: " + e.message);
-            }
+        //     } catch (e) {
+        //         console.error(e);
+        //         alert("Printer Error: " + e.message);
+        //     }
+        // }
+        
+        // =========================
+// QZ SECURITY
+// =========================
+
+qz.security.setCertificatePromise(function(resolve, reject) {
+
+    fetch("/public/digital-certificate.txt")
+        .then(res => res.text())
+        .then(resolve)
+        .catch(reject);
+
+});
+
+qz.security.setSignaturePromise(function(toSign) {
+    return function(resolve, reject) {
+        fetch('/sign-message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ request: toSign })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.text();
+        })
+        .then(sig => {
+            console.log('Signature:', sig); // check this in devtools
+            resolve(sig.trim());            // .trim() removes any hidden newlines
+        })
+        .catch(reject);
+    };
+});
+
+
+// =========================
+// PRINT FUNCTION
+// =========================
+
+window.thermalHtmlPrint = async function(html)
+{
+    try {
+
+        if (typeof qz === 'undefined') {
+            alert('QZ Tray not loaded');
+            return;
         }
+
+        if (!qz.websocket.isActive()) {
+
+            await qz.websocket.connect({
+                retries: 5,
+                delay: 1
+            });
+
+        }
+
+        const config = qz.configs.create("cashier bill", {
+            copies: 1,
+            density: 300
+        });
+
+        await qz.print(config, [{
+            type: 'html',
+            format: 'plain',
+            data: html
+        }]);
+
+        console.log("Printed Successfully");
+
+    } catch (e) {
+
+        console.error(e);
+
+        alert("Printer Error: " + e.message);
+
+    }
+}
         
         window.kotPrint = async function(html)
         {

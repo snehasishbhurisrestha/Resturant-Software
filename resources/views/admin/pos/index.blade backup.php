@@ -65,12 +65,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 @section('content')
 
 <div class="content">
-    <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('pos.index') }}"
-           class="btn btn-warning">
-            <i class="fa fa-arrow-left me-1"></i> Back
-        </a>
-    </div>
 
     <div class="card border-0 shadow-sm overflow-hidden">
 
@@ -97,7 +91,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
                 <div class="col-lg-2 border-end bg-dark left-panel d-none d-lg-block">
 
                     <div class="p-3 border-bottom">
-                        <h5 class="mb-0 text-primary">Categories</h5>
+                        <h5 class="mb-0 text-white">Categories</h5>
                     </div>
 
                     <div class="p-2">
@@ -281,34 +275,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
                 <div class="col-lg-4 border-start bg-dark">
 
                     <div class="p-3 border-bottom">
-
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="mb-1 text-primary">Current Order</h5>
-
-                                <div class="small text-primary">
-                                    Section:
-                                    <span class="fw-bold">
-                                        {{ $currentSection->name ?? 'N/A' }}
-                                    </span>
-                                </div>
-
-                                <div class="small text-primary">
-                                    Table:
-                                    <span class="fw-bold">
-                                        {{ $currentTable->table_number ?? 'N/A' }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Move Table Button -->
-                            <button class="btn btn-warning btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#moveTableModal">
-                                Move
-                            </button>
-                        </div>
-
+                        <h5 class="mb-0">Current Order</h5>
                     </div>
 
                     <div id="cartArea" class="p-3">
@@ -946,109 +913,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     </div>
 
 </div>
-
-<!-- Move Table Modal -->
-<div class="modal fade" id="moveTableModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title">Move Table</h5>
-
-                <button type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"></button>
-            </div>
-
-            <form action="{{ route('pos.move.table') }}" method="POST">
-                @csrf
-
-                <div class="modal-body">
-
-                    <input type="hidden"
-                           name="current_table_id"
-                           value="{{ $currentTable->id }}">
-
-                    <!-- Select Section -->
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Select Section
-                        </label>
-
-                        <select class="form-select"
-                                id="moveSection">
-
-                            <option value="">
-                                Choose Section
-                            </option>
-
-                            @foreach($sections as $section)
-
-                                @php
-
-                                    $availableTables = $section->tables->filter(function($table) use ($currentTable){
-
-                                        if($table->id == $currentTable->id){
-                                            return false;
-                                        }
-
-                                        $activeOrder = \App\Models\Order::where('table_id', $table->id)
-                                            ->whereIn('status', ['draft','kot'])
-                                            ->exists();
-
-                                        return !$activeOrder;
-                                    });
-
-                                @endphp
-
-                                @if($availableTables->count() > 0)
-
-                                    <option value="{{ $section->id }}">
-                                        {{ $section->name }}
-                                    </option>
-
-                                @endif
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-
-                    <!-- Select Table -->
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Select Available Table
-                        </label>
-
-                        <select class="form-select"
-                                name="new_table_id"
-                                id="moveTableSelect"
-                                required>
-
-                            <option value="">
-                                Choose Table
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-                <div class="modal-footer border-secondary">
-                    <button type="submit" class="btn btn-warning">
-                        Move Table
-                    </button>
-                </div>
-
-            </form>
-
-        </div>
-    </div>
-</div>
 @endsection
 
 @section('script')
@@ -1457,15 +1321,15 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
             order_id: selectedOrderId
         }, function(res){
 
-            // // Kitchen Printer
-            // if(res.food_html){
-            //     kotPrint(res.food_html);
-            // }
+            // Kitchen Printer
+            if(res.food_html){
+                kotPrint(res.food_html);
+            }
 
-            // // Bar Printer
-            // if(res.drink_html){
-            //     thermalHtmlPrint(res.drink_html);
-            // }
+            // Bar Printer
+            if(res.drink_html){
+                thermalHtmlPrint(res.drink_html);
+            }
 
         });
 
@@ -1708,170 +1572,107 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 
 <script>
 
-    /*
-    |--------------------------------------------------------------------------
-    | NORMAL PAYMENT BUTTON
-    |--------------------------------------------------------------------------
-    */
-    $('.payment-btn').click(function(){
+/*
+|--------------------------------------------------------------------------
+| NORMAL PAYMENT BUTTON
+|--------------------------------------------------------------------------
+*/
+$('.payment-btn').click(function(){
 
-        $('.payment-btn').removeClass('active');
+    $('.payment-btn').removeClass('active');
 
-        $(this).addClass('active');
+    $(this).addClass('active');
 
-        let paymentMethod =
-            $(this).find('span').text().trim();
+    let paymentMethod =
+        $(this).find('span').text().trim();
 
-        $.ajax({
+    $.ajax({
 
-            url: "{{ route('pos.update.payment') }}",
-            type: "POST",
+        url: "{{ route('pos.update.payment') }}",
+        type: "POST",
 
-            data: {
-                _token: "{{ csrf_token() }}",
-                order_id: selectedOrderId,
-                payment_method: paymentMethod
-            }
-        });
-
+        data: {
+            _token: "{{ csrf_token() }}",
+            order_id: selectedOrderId,
+            payment_method: paymentMethod
+        }
     });
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | OTHER PAYMENT SAVE
-    |--------------------------------------------------------------------------
-    */
-    function saveOtherPayment()
-    {
-        $.ajax({
-
-            url: "{{ route('pos.update.payment') }}",
-            type: "POST",
-
-            data: {
-
-                _token: "{{ csrf_token() }}",
-
-                order_id: selectedOrderId,
-
-                payment_method: 'Other',
-
-                other_payment_method:
-                    $('#otherMethod').val(),
-
-                payment_note:
-                    $('#paymentDescription').val()
-            },
-
-            success:function(response){
-
-                $('#otherPaymentModal').modal('hide');
-
-                alert(response.message);
-            }
-        });
-    }
+});
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | SPLIT PAYMENT
-    |--------------------------------------------------------------------------
-    */
-    function saveSplitPayment()
-    {
-        $.ajax({
+/*
+|--------------------------------------------------------------------------
+| OTHER PAYMENT SAVE
+|--------------------------------------------------------------------------
+*/
+function saveOtherPayment()
+{
+    $.ajax({
 
-            url: "{{ route('pos.update.payment') }}",
-            type: "POST",
+        url: "{{ route('pos.update.payment') }}",
+        type: "POST",
 
-            data: {
+        data: {
 
-                _token: "{{ csrf_token() }}",
+            _token: "{{ csrf_token() }}",
 
-                order_id: selectedOrderId,
+            order_id: selectedOrderId,
 
-                payment_method: 'Split',
+            payment_method: 'Other',
 
-                cash_amount: $('#split_cash').val(),
+            other_payment_method:
+                $('#otherMethod').val(),
 
-                card_amount: $('#split_card').val(),
+            payment_note:
+                $('#paymentDescription').val()
+        },
 
-                upi_amount: $('#split_upi').val(),
+        success:function(response){
 
-                other_amount: $('#split_other').val()
-            },
+            $('#otherPaymentModal').modal('hide');
 
-            success:function(response){
-
-                alert(response.message);
-            }
-        });
-    }
-
-</script>
-
-<script>
-
-    let sectionTables = {
-
-        @foreach($sections as $section)
-
-            @php
-
-                $availableTables = $section->tables->filter(function($table) use ($currentTable){
-
-                    if($table->id == $currentTable->id){
-                        return false;
-                    }
-
-                    $activeOrder = \App\Models\Order::where('table_id', $table->id)
-                        ->whereIn('status', ['draft','kot'])
-                        ->exists();
-
-                    return !$activeOrder;
-                });
-
-            @endphp
-
-            "{{ $section->id }}": [
-
-                @foreach($availableTables as $table)
-
-                    {
-                        id: "{{ $table->id }}",
-                        table: "{{ $table->table_number }}"
-                    },
-
-                @endforeach
-
-            ],
-
-        @endforeach
-
-    };
-
-    $('#moveSection').on('change', function(){
-
-        let sectionId = $(this).val();
-
-        let tables = sectionTables[sectionId] || [];
-
-        let html = '<option value="">Choose Table</option>';
-
-        tables.forEach(function(table){
-
-            html += `
-                <option value="${table.id}">
-                    Table ${table.table}
-                </option>
-            `;
-        });
-
-        $('#moveTableSelect').html(html);
-
+            alert(response.message);
+        }
     });
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| SPLIT PAYMENT
+|--------------------------------------------------------------------------
+*/
+function saveSplitPayment()
+{
+    $.ajax({
+
+        url: "{{ route('pos.update.payment') }}",
+        type: "POST",
+
+        data: {
+
+            _token: "{{ csrf_token() }}",
+
+            order_id: selectedOrderId,
+
+            payment_method: 'Split',
+
+            cash_amount: $('#split_cash').val(),
+
+            card_amount: $('#split_card').val(),
+
+            upi_amount: $('#split_upi').val(),
+
+            other_amount: $('#split_other').val()
+        },
+
+        success:function(response){
+
+            alert(response.message);
+        }
+    });
+}
 
 </script>
 @endsection

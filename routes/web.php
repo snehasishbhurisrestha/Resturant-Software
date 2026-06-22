@@ -26,6 +26,23 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::post('/sign-message', function (\Illuminate\Http\Request $request) {
+    $privateKey = file_get_contents(storage_path('app/qz/private-key.pem'));
+    $pkeyid = openssl_get_privatekey($privateKey);
+    $signature = null;
+
+    openssl_sign(
+        $request->input('request'),
+        $signature,
+        $pkeyid,
+        OPENSSL_ALGO_SHA512
+    );
+
+    openssl_free_key($pkeyid);
+
+    return response(base64_encode($signature), 200)
+        ->header('Content-Type', 'text/plain');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

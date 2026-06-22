@@ -29,9 +29,9 @@
                             {{ $table->table_number }}
                         </h6>
 
-                        <p class="mb-0">
+                        {{--<p class="mb-0">
                             Capacity: {{ $table->capacity }}
-                        </p>
+                        </p>--}}
 
                         @if($table->orders->count() > 0)
 
